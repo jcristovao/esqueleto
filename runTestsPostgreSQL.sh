@@ -8,7 +8,7 @@ user=`whoami`
 
 # Auxiliary functions
 function error {
-	echo $1
+	echo "$1"
 	exit 1
 }
 
@@ -32,12 +32,12 @@ createdb --version > /dev/null  \
 
 # Check optional username
 if [ "$1" != "" ]; then
-	user=$1
+	user="$1"
 fi
 
 # Create database, if necessary
 psql -c "drop schema public cascade; create schema public;" \
-	 -h ${host} -p ${port} ${testdb} ${user} 2&>1 /dev/null
+	 -h ${host} -p ${port} ${testdb} ${user} > /dev/null 2>&1
 
 if [ $? != 0 ]; then
 	createdb -O ${user} ${testdb}
