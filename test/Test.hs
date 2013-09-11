@@ -20,6 +20,7 @@ import Control.Monad.Logger (MonadLogger(..), runStderrLoggingT, runNoLoggingT)
 import Control.Monad.Trans.Control (MonadBaseControl(..))
 import Database.Esqueleto
 import Database.Persist.Sqlite (withSqliteConn)
+import Database.Persist.Postgresql (withPostgresqlConn)
 import Database.Persist.TH
 import Test.Hspec
 
