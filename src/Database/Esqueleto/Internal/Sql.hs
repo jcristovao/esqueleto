@@ -824,8 +824,8 @@ makeOrderBy _    [] = mempty
 makeOrderBy conn os = first ("\nORDER BY " <>) $ uncommas' (map mk os)
   where
     mk (EOrderBy t (ERaw p f)) = first ((<> orderByType t) . parensM p) (f conn)
-    orderByType ASC  = " ASC"
-    orderByType DESC = " DESC"
+    orderByType ASC  = " ASC NULLS FIRST"
+    orderByType DESC = " DESC NULLS LAST"
 
 
 makeLimit :: Connection -> LimitClause -> (TLB.Builder, [PersistValue])
