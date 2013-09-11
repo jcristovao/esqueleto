@@ -276,7 +276,7 @@ main = do
           ret <- select $
                  from $ \p->
                  return $ joinV $ sum_ (p ^. PersonAge)
-          liftIO $ ret `shouldBe` [ Value $ Just (36 + 17 + 17 :: Int) ]
+          liftIO $ ret `shouldBe` [ Value $ Just (36 + 17 + 17 :: Rational) ]
 
       it "works with avg_" $
         run $ do
@@ -313,7 +313,7 @@ main = do
 
       it "works with random_" $
         run $ do
-          ret <- select $ return (random_ :: SqlExpr (Value Int))
+          ret <- select $ return (random_ :: SqlExpr (Value Double))
           return ()
 
       it "works with round_" $
@@ -725,6 +725,11 @@ insert' v = flip Entity v <$> insert v
 type RunDbMonad m = ( MonadBaseControl IO m, MonadIO m, MonadLogger m
                     , C.MonadUnsafeIO m, C.MonadThrow m )
 
+cleanDB :: (forall m. RunDbMonad m => SqlPersistT (C.ResourceT m) ())
+cleanDB = do
+  delete $ from $ \(_ :: SqlExpr (Entity BlogPost))-> return ()
+  delete $ from $ \(_ :: SqlExpr (Entity Follow))  -> return ()
+  delete $ from $ \(_ :: SqlExpr (Entity Person))  -> return ()
 
 run, runSilent, runVerbose :: (forall m. RunDbMonad m => SqlPersistT (C.ResourceT m) a) -> IO a
 runSilent  act = runNoLoggingT     $ run_worker act
@@ -740,8 +745,10 @@ verbose = True
 
 
 run_worker :: RunDbMonad m => SqlPersistT (C.ResourceT m) a -> m a
-run_worker =
+run_worker act =
   C.runResourceT .
   withSqliteConn ":memory:" .
   runSqlConn .
   (runMigrationSilent migrateAll >>)
+  $ (cleanDB >> act)
+
